@@ -4,13 +4,18 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Scanner;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.WritableComparable;
+import org.apache.hadoop.io.WritableComparator;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
@@ -110,8 +115,68 @@ public class PageRanker {
 		}
 	}
 	
+	public static class Mapper2 extends Mapper<Object, Text, DoubleWritable, Text> {
+
+		private DoubleWritable outputKey = new DoubleWritable();
+		private Text outputValue = new Text();
+		
+		@Override
+		public void map(Object key, Text value, Context context)
+				throws IOException, InterruptedException {
+			String [] input = value.toString().split("\t", 2);
+			String credit = input[1].split(" ", 2)[0];
+			outputKey.set(Double.valueOf(credit));
+			outputValue.set(input[0]);
+			context.write(outputKey, outputValue);
+		}
+	}
 	
-	// Count the number of nodes and attach a pagerank score 1
+	public static class Reducer2 extends Reducer<DoubleWritable, Text, DoubleWritable, Text> {
+		
+		private Text outputValue = new Text();
+		
+		@Override
+		public void reduce(DoubleWritable key, Iterable<Text> value, Context context)
+				throws IOException, InterruptedException {
+			Iterator<Text> itr = value.iterator();
+			ArrayList<Long> pages = new ArrayList<Long>();
+			while (itr.hasNext()){
+				Long page = Long.valueOf(itr.next().toString());
+				pages.add(page);
+			}
+			Object[] pagesArr = pages.toArray();
+			Arrays.sort(pagesArr);
+			String output = "";
+			for(Object page : pagesArr){
+				output += page.toString() + " ";
+			}
+			outputValue.set(output.trim());
+			context.write(key, outputValue);
+		}
+	}
+	
+	@SuppressWarnings("rawtypes")
+	public static class KeyDescendingComparator extends WritableComparator {
+		protected KeyDescendingComparator(){
+			super(DoubleWritable.class, true);
+		}
+		
+		@Override
+		public int compare(WritableComparable o1, WritableComparable o2) {
+			DoubleWritable key1 = (DoubleWritable) o1;
+			DoubleWritable key2 = (DoubleWritable) o2;
+			
+			if (key1.get() < key2.get()){
+				return 1;
+			}else if(key1.get() == key2.get()){
+				return 0;
+			}else{
+				return -1;
+			}
+		}
+	}
+	
+	// Count the number of nodes and attach a pagerank score 1	
 	public static void preprocessing(String filename) 
 		throws FileNotFoundException, IOException{
 		FileSystem fs = FileSystem.get(new Configuration());
@@ -163,14 +228,12 @@ public class PageRanker {
 			job.setReducerClass(Reducer1.class);
 			job.setOutputKeyClass(Text.class);
 			job.setOutputValueClass(Text.class);
-			System.out.println(inputFile);
-			System.out.println(tmpOutput);
 			FileInputFormat.addInputPath(job, new Path(inputFile));
 			FileOutputFormat.setOutputPath(job, new Path(tmpOutput));
 			job.waitForCompletion(true);
 		
 			//reset output to input before the next iteration starts
-			if (i != iterations-1){
+			//if (i != iterations-1){
 				FileSystem fs = FileSystem.get(conf);
 				
 				Path tmp = new Path(tmpOutput+Path.SEPARATOR+"part-r-00000");
@@ -191,7 +254,18 @@ public class PageRanker {
 					success = fs.delete(new Path(tmpOutput),true);
 				}
 				fs.close();
-			}
+			//}
 		}
+		//sort the results
+		Job job = Job.getInstance(conf, "PageRankResultSort");
+		job.setJarByClass(PageRanker.class);
+		job.setMapperClass(Mapper2.class);
+		job.setSortComparatorClass(KeyDescendingComparator.class);
+		job.setReducerClass(Reducer2.class);
+		job.setOutputKeyClass(DoubleWritable.class);
+		job.setOutputValueClass(Text.class);
+		FileInputFormat.addInputPath(job, new Path(inputFile));
+		FileOutputFormat.setOutputPath(job, new Path(tmpOutput));
+		job.waitForCompletion(true);
 	}
 }
