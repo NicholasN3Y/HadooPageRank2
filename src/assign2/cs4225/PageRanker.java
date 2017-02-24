@@ -177,11 +177,18 @@ public class PageRanker {
 				Path in = new Path(inputFile+Path.SEPARATOR+new Path(input).getName());
 				boolean success = false;
 				while (!success){
+					//delete input for this iteration
 					success = fs.delete(in, true);
 				}
 				success = false;
 				while(!success){
-					fs.rename(tmp,in);
+					//set output of this iteration to input of next iteration
+					success = fs.rename(tmp,in);
+				}
+				success = false;
+				while(!success){
+					//delete output folder of this iteration
+					success = fs.delete(new Path(tmpOutput),true);
 				}
 				fs.close();
 			}
