@@ -19,7 +19,6 @@ hadoop fs -rm -R a0112224/assignmnet_2/input
 hadoop fs -rm -R a0112224/assignment_2/output
 echo -e  "\n########## start hadoop MapReduce Job ##########\n"
 hadoop jar PageRanker.jar assign2.cs4225.PageRanker $inputFile
-echo -e "\nIf results show less than ${K}, means that remaining files have 0 correlation."
 echo -e  "\n########## get output results from hadoop fs ##########\n"
 rm ../final_results.txt
 hadoop fs -get a0112224/assignment_2/output/part-r-00000 ../final_results.txt

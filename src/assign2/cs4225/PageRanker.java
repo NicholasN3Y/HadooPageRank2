@@ -1,6 +1,5 @@
 package assign2.cs4225;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -26,7 +25,7 @@ import org.apache.hadoop.util.GenericOptionsParser;
 public class PageRanker {
 	// record the number of nodes;
 	public static int count = 0;
-	public final static int iterations = 10;
+	public final static int iterations = 15;
 	public final static String assign2Path = "a0112224"+Path.SEPARATOR+"assignment_2";
 
 	// Compute one iteration of PageRank.
