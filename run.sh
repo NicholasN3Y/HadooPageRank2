@@ -9,19 +9,19 @@ fi
 
 cd src/assign2/cs4225
 echo -e  "\n########## compiling java code ##########\n"
-javac -cp `hadoop classpath` PageRanker.java -d ../../../bin
+javac -cp `hadoop classpath` PageRankerV2.java -d ../../../bin
 echo -e  "\n########## java classes compiled ##########\n"
 cd ../../../bin
 echo -e  "\n########## creating jar file ##########\n"
-jar -cvf PageRanker.jar .
+jar -cvf PageRankerV2.jar .
 echo -e  "\n########## clean previous hadoop Job output directory ##########\n"
-hadoop fs -rm -R a0112224/assignmnet_2/input
-hadoop fs -rm -R a0112224/assignment_2/output
+hadoop fs -rm -R a0112224/assignment_2/inputV2
+hadoop fs -rm -R a0112224/assignment_2/outputV2
 echo -e  "\n########## start hadoop MapReduce Job ##########\n"
-hadoop jar PageRanker.jar assign2.cs4225.PageRanker $inputFile
+hadoop jar PageRankerV2.jar assign2.cs4225.PageRankerV2 $inputFile
 echo -e  "\n########## get output results from hadoop fs ##########\n"
 rm ../final_results.txt
-hadoop fs -get a0112224/assignment_2/output/part-r-00000 ../final_results.txt
+hadoop fs -get a0112224/assignment_2/outputV2/part-r-00000 ../final_results.txt
 cd ..
 echo -e "\nSorted final results can be found in final_results.txt"
 echo -e  "\n########## DONE! ##########\n"
