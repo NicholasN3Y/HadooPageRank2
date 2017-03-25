@@ -256,7 +256,7 @@ public class PageRankerV2 {
 				}
 			}
 		}
-		if (denom == 0){denom = 0.00001;}
+		if (denom == 0){return 0.00001;}
 		return (numer / denom);
 	}
 
@@ -280,7 +280,7 @@ public class PageRankerV2 {
 			}
 		}
 		//avoid division by zero
-		if (denom == 0){ denom = 0.00001;}
+		if (denom == 0){ return 0.00001;}
 		return (numer / denom);
 
 	}

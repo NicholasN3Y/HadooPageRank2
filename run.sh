@@ -7,14 +7,15 @@ if [[ $# -lt 1 ]] ; then
     exit 1
 fi
 
-cd src/assign2/cs4225
-echo -e  "\n########## compiling java code ##########\n"
-javac -cp `hadoop classpath` PageRankerV2.java -d ../../../bin
-echo -e  "\n########## java classes compiled ##########\n"
-cd ../../../bin
-echo -e  "\n########## creating jar file ##########\n"
-jar -cvf PageRankerV2.jar .
-echo -e  "\n########## clean previous hadoop Job output directory ##########\n"
+#cd src/assign2/cs4225
+#echo -e  "\n########## compiling java code ##########\n"
+#javac -cp `hadoop classpath` PageRankerV2.java -d ../../../bin
+#echo -e  "\n########## java classes compiled ##########\n"
+#cd ../../../bin
+cd bin
+#echo -e  "\n########## creating jar file ##########\n"
+#jar -cvf PageRankerV2.jar .
+#echo -e  "\n########## clean previous hadoop Job output directory ##########\n"
 hadoop fs -rm -R a0112224/assignment_2/inputV2
 hadoop fs -rm -R a0112224/assignment_2/outputV2
 echo -e  "\n########## start hadoop MapReduce Job ##########\n"
